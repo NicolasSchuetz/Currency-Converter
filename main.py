@@ -1,5 +1,6 @@
 #Imports
-import tkinter as tk
+import tkinter as tk #GUI
+import requests #API
 
 #Multi language Support
 translations={
@@ -11,13 +12,28 @@ translations={
     "pt":{"title":"Conversor de moedas","button":"Converter",},
     "ru":{"title":"Конвертер валют","button":"Преобразовать",},} 
 
+#Currencies and API support via Exchangerate-API
+API_KEY="YOUR_API_KEY"
+API_URL=f"https://v6.exchangerate-api.com/v6/{API_KEY}/latest/EUR"
+def get_exchange_rates():
+    response=requests.get(API_URL)
+    data=response.json()
+    return data["conversion_rates"]
+exchange_rates=get_exchange_rates()
+currencys={
+    "USD":exchange_rates["USD"],
+    "CHF":exchange_rates["CHF"],
+    "GBP":exchange_rates["GBP"],
+}
 #Class
 class CurrencyConverter:
     def __init__(self,root):
         #Window
         self.root = root
         self.root.geometry("400x400")
-        
+        icon =tk.PhotoImage(file="simple_currency_icon.png")  
+        self.root.iconphoto(True, icon)
+
         #Language
         self.language=tk.StringVar(value="en")
         self.language.trace_add("write",self.update_language) #Auto Akutalisiert
@@ -31,7 +47,7 @@ class CurrencyConverter:
         self.curr2.grid(row=0,column=2)
         #Drop down menu
         self.t_curr=tk.StringVar(value="USD")
-        self.drop=tk.OptionMenu(root,self.t_curr,"USD","CHF","GBP")
+        self.drop=tk.OptionMenu(root,self.t_curr,*currencys.keys())	
         self.drop.grid(row=0,column=3)
         #Convert Button
         self.convert_button=tk.Button(root,command=self.convert)
@@ -46,13 +62,13 @@ class CurrencyConverter:
         self.convert_button.config(text=translations[lang]["button"])
 
     def convert(self):
-        if self.t_curr.get() == "USD":
-            self.result=float(self.curr1.get())*1.04
-        elif self.t_curr.get() == "CHF":
-            self.result=float(self.curr1.get())*1.07
-        elif self.t_curr.get() == "GBP":
-            self.result=float(self.curr1.get())*0.83
-        self.result=round(self.result,2)
+        #Result Calculation
+        try:
+            self.result=float(self.curr1.get())*currencys[self.t_curr.get()]
+            self.result=round(self.result,2)
+        except ValueError:
+            self.result=f"{self.curr1.get()} is not a number"
+        #Display Result
         self.curr2.config(state="normal")
         self.curr2.delete(0,"end")
         self.curr2.insert(0,str(self.result))
@@ -62,5 +78,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = CurrencyConverter(root)
     root.mainloop()
-
-
