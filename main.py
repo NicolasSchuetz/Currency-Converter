@@ -11,6 +11,7 @@ translations={
     "pt":{"title":"Conversor de moedas","button":"Converter",},
     "ru":{"title":"Конвертер валют","button":"Преобразовать",},} 
 
+#Kommentar
 #Class
 class CurrencyConverter:
     def __init__(self,root):
